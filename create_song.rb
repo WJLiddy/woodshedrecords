@@ -37,6 +37,28 @@ def quality_to_mid_offset(q)
 	end
 end
 
+def gen_drum_event(chord,len)
+
+	events = []
+	accidental = 0
+	if(chord.include?("b"))
+		chord.gsub!("b","")
+		accidental = -1
+	end
+
+	chord_root = root_to_mid(chord[0]) + accidental - 24
+	chord_quality = invert(quality_to_mid_offset(chord[1..-1]),-3 + rand(6))
+
+	chord_quality.each do |i|
+		events << MIDI::NoteOn.new(10, chord_root + i, 127, 0)
+	end
+
+	chord_quality.each_with_index do |e,i|
+		events << MIDI::NoteOff.new(10, chord_root + e, 127, i == 0 ? len : 0)
+	end
+	events
+end
+
 def gen_chord_event(chord,len)
 
 	events = []
@@ -57,6 +79,30 @@ def gen_chord_event(chord,len)
 		events << MIDI::NoteOff.new(0, chord_root + e, 127, i == 0 ? len : 0)
 	end
 	events
+end
+
+def gen_bass_walk(leading,chord,next_chord,len)
+
+	# won't play multiple chords yet
+	chord = chord[0]
+	events = []
+	accidental = 0
+	if(chord.include?("b"))
+		chord.gsub!("b","")
+		accidental = -1
+	end
+
+	chord_root = root_to_mid(chord[0]) + accidental
+	chord_quality = invert(quality_to_mid_offset(chord[1..-1]),-3 + rand(6)).map{|i| i -= 24}
+
+	(chord_quality << chord_quality[0] + 12) if chord_quality.count < 4 
+
+	chord_quality.each do |i|
+		events << MIDI::NoteOn.new(1, chord_root + i, 127, 0)
+		events << MIDI::NoteOff.new(1, chord_root + i, 127, len)
+	end
+
+	[events,nil]
 end
 
 def add_piano_track(json,seq)
@@ -96,10 +142,10 @@ def add_bass_track(json,seq)
 	track.instrument = MIDI::GM_PATCH_NAMES[36]
 
 	# Add a volume controller event (optional).
-	track.events << MIDI::Controller.new(0, MIDI::CC_VOLUME, 127)
+	track.events << MIDI::Controller.new(1, MIDI::CC_VOLUME, 127)
 
 
-	track.events << MIDI::ProgramChange.new(0, 1, 0)
+	track.events << MIDI::ProgramChange.new(1, 33, 0)
 	qnl = seq.note_to_delta('quarter')
 
 	chords_flat = []
@@ -113,6 +159,7 @@ def add_bass_track(json,seq)
 	track.events += walk[0]
 	walk_lead = walk[1]
 	chords_flat.each_with_index do |c,i|
+		walk = gen_bass_walk(nil,c,chords_flat[i+1],qnl)
 		track.events += walk[0]
 		walk_lead = walk[1]
 	end
@@ -123,27 +170,19 @@ def add_drum_track(json,seq)
 	# Create a track to hold the notes. Add it to the sequence.
 	track = MIDI::Track.new(seq)
 	seq.tracks << track
+	fname = Dir.entries("drum_loops/").delete_if{|e| !e.include? "."}.sample
 
-	# Give the track a name and an instrument name (optional).
-	track.name = 'Piano'
-	track.instrument = MIDI::GM_PATCH_NAMES[0]
-
-	# Add a volume controller event (optional).
-	track.events << MIDI::Controller.new(0, MIDI::CC_VOLUME, 127)
-
-	# Add events to the track: a major scale. Arguments for note on and note off
-	# constructors are channel, note, velocity, and delta_time. Channel numbers
-	# start at zero. We use the new Sequence#note_to_delta method to get the
-	# delta time length of a single quarter note.
-	track.events << MIDI::ProgramChange.new(0, 1, 0)
-	qnl = seq.note_to_delta('quarter')
-	json["song_data"].each do |section|
-		section.each do |bar|
-			bar.each do |chord|
-				track.events += gen_chord_event(chord,4*qnl)
+	seq2 = MIDI::Sequence.new()
+	File.open("drum_loops/"+ fname, 'rb') { | file |
+		seq2.read(file) { | track2, num_tracks, i |
+			next if !track2
+			16.times do |n|
+				track2.each do |e|
+					track.events << e
+				end
 			end
-		end
-	end
+		}
+	}
 end
 
 
@@ -161,6 +200,7 @@ def create_song(chart_json)
 
 	add_piano_track(chart_json,seq)
 	add_bass_track(chart_json,seq)
+	add_drum_track(chart_json,seq)
 	# Calling recalc_times is not necessary, because that only sets the events'
 	# start times, which are not written out to the MIDI file. The delta times are
 	# what get written out.
