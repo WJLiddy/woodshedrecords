@@ -5,14 +5,14 @@ require 'json'
 
 require_relative "bass"
 require_relative "piano"
-
+require_relative "lead"
 
 
 def add_drum_track(json,seq)
 	# Create a track to hold the notes. Add it to the sequence.
 	track = MIDI::Track.new(seq)
 	seq.tracks << track
-	fname = Dir.entries("drum_loops/").delete_if{|e| !e.include? "."}.sample
+	fname = Dir.entries("drum_loops/").delete_if{|e| e == "." || e == ".."}.sample
 
 	seq2 = MIDI::Sequence.new()
 	File.open("drum_loops/"+ fname, 'rb') { | file |
@@ -41,6 +41,7 @@ def create_song(chart_json)
 
 	add_piano_track(chart_json,seq)
 	add_bass_track(chart_json,seq)
+	add_lead_track(chart_json,seq)
 	add_drum_track(chart_json,seq)
 	# Calling recalc_times is not necessary, because that only sets the events'
 	# start times, which are not written out to the MIDI file. The delta times are

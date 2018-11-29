@@ -1,6 +1,8 @@
 
 require_relative "music_common"
 
+# Simple walking on C.Ts.
+
 # will only play first chord in measure.
 def gen_bass_walk(leading,chord,next_chord,len)
 
