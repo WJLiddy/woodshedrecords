@@ -36,17 +36,17 @@ def chart_music_to_json(chart_music)
 	return tokens_to_measures(tokens)
 end
 
-def chart_data_to_json(song_chart)
+def chart_data_to_json(json,song_chart)
 	clean = song_chart.to_s.sub("<pre>","").sub("</pre>","")
 	key_header_idx = clean.index("Key of")
 	raise "no key found" if !key_header_idx
 	clean = clean[key_header_idx..-1]
 	meta = clean.lines.first.gsub(/\(.+?\)/,"").split(" ")
-	json = {}
 	raise "malformed meta" if meta.size != 4
 	json["key"] = meta[2]
 	json["time"] = meta[3]
-	json["sections"] = chart_music_to_json(clean)
+	json["song_data"] = chart_music_to_json(clean)
+	json
 end
 
 def chart_html_to_json(html)
@@ -55,7 +55,7 @@ def chart_html_to_json(html)
 	song_data = page.css("body").css("pre")
 	json_out = {}
 	json_out["song_name"] = song_name.to_s.strip
-	json_out["song_data"] = chart_data_to_json(song_data)
+	json_out = chart_data_to_json(json_out,song_data)
 	json_out.to_json
 end
 #puts chart_html_to_json(File.read("charts_html/a1.html"))
