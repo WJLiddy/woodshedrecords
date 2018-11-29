@@ -1,20 +1,49 @@
 
 require_relative "music_common"
 
+# will only play first chord in measure.
 def gen_bass_walk(leading,chord,next_chord,len)
 
+	low = 28
+	hi = 52
+	mid = ((low + hi) / 2)
+
+	walk_up = (leading < mid) if leading
 	events = []
-	chord_root, chord_quality = get_intervals(chord)
-	chord_quality = invert(chord_quality,-3 + rand(6)).map{|i| i += 24}
+	chord_root, chord_quality = get_intervals(chord[0])
+	chord_quality.map!{|i| i += 12}
 
-	(chord_quality << chord_quality[0] + 12) if chord_quality.count < 4 
 
-	chord_quality.each do |i|
-		events << MIDI::NoteOn.new(1, chord_root + i, 127, 0)
-		events << MIDI::NoteOff.new(1, chord_root + i, 127, len)
+	chord_quality.map!{|i| i + chord_root}
+
+	if(leading && walk_up)
+		# invert up 52.
+		chord_quality = invert(chord_quality, 100)
+				# overshoots.
+		chord_quality = invert(chord_quality,-1) while (chord_quality[0] > leading)
+		invert(chord_quality,1)
+		(chord_quality << (chord_quality[0] + 12)) if (chord_quality.count < 4)
+	end
+	if(leading && !walk_up)
+		chord_quality = invert(chord_quality, -100)
+		# overshoots.
+		chord_quality = invert(chord_quality,1) while (chord_quality[-1] < leading)
+		invert(chord_quality,-1)
+		chord_quality.reverse!
+		(chord_quality << (chord_quality[0] - 12)) if (chord_quality.count < 4)
 	end
 
-	[events,nil]
+	#if no leading, we're walking up.
+	(chord_quality << (chord_quality[0] + 12)) if (chord_quality.count < 4)
+
+	# decide to go up or down from leading tone
+	chord_quality.each do |i|
+		events << MIDI::NoteOn.new(1, i, 127, 0)
+		events << MIDI::NoteOff.new(1, i, 127, len)
+	end
+
+
+	[events, chord_quality[3]]
 end
 
 def add_bass_track(json,seq)
@@ -43,8 +72,10 @@ def add_bass_track(json,seq)
 	walk = gen_bass_walk(nil,chords_flat[0],chords_flat[1],qnl)
 	track.events += walk[0]
 	walk_lead = walk[1]
+	chords_flat.shift
+
 	chords_flat.each_with_index do |c,i|
-		walk = gen_bass_walk(nil,c,chords_flat[i+1],qnl)
+		walk = gen_bass_walk(walk_lead,c,chords_flat[i+1],qnl)
 		track.events += walk[0]
 		walk_lead = walk[1]
 	end

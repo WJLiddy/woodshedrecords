@@ -12,8 +12,10 @@ def get_sample_data()
 	[titles,sections]
 end
 
+# Naive solution just stops when tonic is reached.
+# Better solution uses a neural net.
 def markov_section(section)
-
+	markov++
 end
 
 def collect_sections(sections)

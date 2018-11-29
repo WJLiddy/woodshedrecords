@@ -4,7 +4,9 @@ require_relative "music_common"
 def gen_chord_event(chord,len)
 
 	events = []
+
 	chord_root, chord_quality = get_intervals(chord)
+
 	chord_quality = invert(chord_quality,-3 + rand(6)).map{|i| i += 48}
 
 	chord_quality.each do |i|
@@ -14,6 +16,7 @@ def gen_chord_event(chord,len)
 	chord_quality.each_with_index do |e,i|
 		events << MIDI::NoteOff.new(0, chord_root + e, 127, i == 0 ? len : 0)
 	end
+
 	events
 end
 
@@ -36,6 +39,7 @@ def add_piano_track(json,seq)
 	# delta time length of a single quarter note.
 	track.events << MIDI::ProgramChange.new(0, 1, 0)
 	qnl = seq.note_to_delta('quarter')
+
 	json["song_data"].each do |section|
 		section.each do |bar|
 			bar.each do |chord|

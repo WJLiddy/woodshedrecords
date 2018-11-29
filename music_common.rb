@@ -1,6 +1,4 @@
 def get_intervals(chord)
-		# won't play multiple chords yet
-	chord = chord[0]
 	events = []
 	accidental = 0
 	if(chord.include?("b"))
@@ -17,14 +15,12 @@ def invert(intervals, inv)
 	if inv > 0
 		inv.times do |e|
 			val = intervals.shift
-			val += 12
-			intervals.insert(-1,val)
+			intervals.push(val + 12)
 		end
 	else
 		inv.abs.times do |e|
 			val = intervals.pop
-			val -= 12
-			intervals.insert(0,val)
+			intervals.unshift((val - 12))
 		end
 	end
 	intervals
