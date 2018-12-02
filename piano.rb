@@ -21,10 +21,12 @@ end
 
 
 def add_piano_track(json,seq)
+
 	# Create a track to hold the notes. Add it to the sequence.
 	track = MIDI::Track.new(seq)
-	seq.tracks << track
 
+	
+	seq.tracks << track
 	# Give the track a name and an instrument name (optional).
 	track.name = 'Piano'
 	track.instrument = MIDI::GM_PATCH_NAMES[0]

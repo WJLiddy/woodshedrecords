@@ -41,7 +41,7 @@ def gen_bass_walk(leading,chord,next_chord,len)
 	# decide to go up or down from leading tone
 	chord_quality.each do |i|
 		events << MIDI::NoteOn.new(1, i, 127, 0)
-		events << MIDI::NoteOff.new(1, i, 127, len)
+		events << MIDI::NoteOff.new(1,  i, 127, len)
 	end
 
 

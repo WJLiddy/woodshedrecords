@@ -18,7 +18,8 @@ def get_intervals(chord)
 
 	chord_root = root_to_mid(chord_root_str) + accidental
 	chord_quality = quality_to_mid_offset(chord_qual_str)
-	return [chord_root,chord_quality]
+	chord_scale = quality_to_scale(chord_qual_str)
+	return [chord_root,chord_quality,chord_scale]
 end
 #	chord_quality = invert(quality_to_mid_offset(chord[1..-1]),-3 + rand(6)).map{|i| i += 12*oct}
 def invert(intervals, inv)
@@ -38,6 +39,29 @@ end
 
 def root_to_mid(note)
 	{"A" => 9, "B" => 11, "C" => 12, "D" => 14, "E" => 16, "F" =>17, "G" => 19}[note]
+end
+
+def quality_to_scale(q)
+	scale = [0,2,4,5,7,9,11,12]
+	if q.include? "m"
+		scale[2] -= 1
+		scale[6] -= 1
+	end
+	if q.include? "7" 
+		scale[6] -= 1 if (scale[6] == 11)
+	end
+	if q.include? "b5"
+		scale[4] -= 1
+	end
+	if q.include? "dim"
+		scale[2] -= 1
+		scale[4] -= 1
+		scale[6] -= 1
+	end
+	if q.include? "+"
+		scale[4] += 1
+	end
+	return scale
 end
 
 def quality_to_mid_offset(q)
