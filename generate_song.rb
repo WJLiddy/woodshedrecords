@@ -60,6 +60,31 @@ def chord_gen(markov, count)
 	chords
 end
 
+# Sometimes I need to ignore something in the original data.
+# I don't handle sus chords..yet
+def clean (sec)
+	sec2 = []
+	last = nil
+	sec.each do |bar|
+		bar2 = []
+		bar.each do |c|
+
+			if (c == "/")
+				bar2 << last
+				next
+			end
+
+			next if (c == "sus")
+			last = c
+			bar2 << c 
+
+		end
+		sec2 << bar2
+	end
+	sec2
+end
+
+
 def make_song
 	data = get_sample_data
 	sections = collect_sections(data[1])
@@ -74,21 +99,20 @@ def make_song
 	# Roll the dice
 	case 1+rand(6)
 	when 6
-		a_section = 24
-	when 1
-		a_section = 8
-	else
 		a_section = 16
+	else
+		a_section = 8
 	end
 
 	case 1+rand(6)
 	when 6
 		b_section = 24
-	when 1
-		b_section = 8
-	else
+	when 5
 		b_section = 16
+	else
+		b_section = 8
 	end
+	puts "#{a_section} #{b_section}"
 
 	patterns = []
 
@@ -115,8 +139,8 @@ def make_song
 	json = {}
 	json["name"] = (0...5).map { (65 + rand(26)).chr }.join
 	json["tempo"] = tempo
-	json["a_section"] = a_section_chords
-	json["b_section"] = b_section_chords
+	json["a_section"] = clean(a_section_chords)
+	json["b_section"] = clean(b_section_chords)
 	json["structure"] = song_struct
 	json
 end
@@ -126,5 +150,5 @@ end
 
 100.times do 
 	song = make_song
-	File.write("generated_songs/#{song["name"]}.json",song)
+	File.write("generated_songs/#{song["name"]}.json",song.to_json)
 end

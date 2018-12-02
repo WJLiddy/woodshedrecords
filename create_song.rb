@@ -47,7 +47,11 @@ def create_song(chart_json)
 	# start times, which are not written out to the MIDI file. The delta times are
 	# what get written out.
 
-	File.open('from_scratch.mid', 'wb') { |file| seq.write(file) }
+	File.open("realized_songs/#{chart_json["name"]}.mid", 'wb') { |file| seq.write(file) }
 end
 
-create_song(JSON::parse(File.read('charts_json\a1.json')))
+Dir.entries("generated_songs/").each do |e|
+	next if e == "." || e == ".."
+	next if File.exists?("realized_songs/#{e}")
+	create_song(JSON::parse(File.read("generated_songs/#{e}")))
+end

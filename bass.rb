@@ -48,6 +48,19 @@ def gen_bass_walk(leading,chord,next_chord,len)
 	[events, chord_quality[3]]
 end
 
+def walk_sec(chords_flat,qnl,track)
+	walk = gen_bass_walk(nil,chords_flat[0],chords_flat[1],qnl)
+	track.events += walk[0]
+	walk_lead = walk[1]
+	chords_flat.shift
+
+	chords_flat.each_with_index do |c,i|
+		walk = gen_bass_walk(walk_lead,c,chords_flat[i+1],qnl)
+		track.events += walk[0]
+		walk_lead = walk[1]
+	end
+end
+
 def add_bass_track(json,seq)
 	# Create a track to hold the notes. Add it to the sequence.
 	track = MIDI::Track.new(seq)
@@ -64,22 +77,22 @@ def add_bass_track(json,seq)
 	track.events << MIDI::ProgramChange.new(1, 33, 0)
 	qnl = seq.note_to_delta('quarter')
 
-	chords_flat = []
-	json["song_data"].each do |section|
-		section.each do |bar|
-			chords_flat << bar
+	json["structure"].flatten.each do |s|
+
+		if s.include? "A"
+			chords_flat = []
+			json["a_section"].each do |bar|
+				chords_flat << bar
+			end
+			walk_sec(chords_flat,qnl,track)
+		else
+			chords_flat = []
+			json["b_section"].each do |bar|
+				chords_flat << bar
+			end
+			walk_sec(chords_flat,qnl,track)
 		end
 	end
-
-	walk = gen_bass_walk(nil,chords_flat[0],chords_flat[1],qnl)
-	track.events += walk[0]
-	walk_lead = walk[1]
-	chords_flat.shift
-
-	chords_flat.each_with_index do |c,i|
-		walk = gen_bass_walk(walk_lead,c,chords_flat[i+1],qnl)
-		track.events += walk[0]
-		walk_lead = walk[1]
-	end
+	
 	# Assumes one chord per bar!
 end
