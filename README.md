@@ -8,7 +8,7 @@ Jazz music is pretty easy right? The piano player just plays chords, the bass pl
 My good dude Ralph Patt set up a (website with a bunch of chords for jazz standards)[http://www.ralphpatt.com/Song.html]. I harvested all of these html files using multi download tool for firefox and put them in [charts_html/](charts_html).
 
 The HTMLs have a format that looks like this
-'''
+`
 <HTML>
 <HEAD>
 <TITLE>One Note Samba </TITLE>
@@ -47,13 +47,13 @@ Key of Bb      4/4
 
 </BODY>
 </HTML>
-'''
+`
 
 I have a [ruby script](html_converter.rb) that reformats these HTMLs into jsons like this
 
-'''
+`
 {"song_name":"ONE NOTE SAMBA","key":"Bb","time":"4/4","song_data":[[["Dm7"],["Db7"],["Cm7"],["B7b5"],["Dm7"],["Db7"],["Cm7"],["B7b5"],["Fm7"],["Bb7"],["Eb"],["Ebm"],["Dm7"],["Db7"],["Cm7","B7b5"],["Bb"]],[["Ebm7"],["Ab7"],["Db"],["Db"],["Dbm7"],["Gb7"],["Cb"],["Cm7b5","B7b5"],["Dm7"],["Db7"],["Cm7"],["B7b5"],["Dm7"],["Db7"],["Cm7"],["B7b5"],["Fm7"],["Bb7"],["Eb"],["Ebm"],["Db"],["C7"],["B"],["Bb"]]]}
-'''
+`
 
 From here, we transpose all the songs to C using [song_trasponse.rb](song_trasponse.rb)
 (This actually takes a pretty big shortcut. It just rejects songs that aren't in C). 
@@ -62,14 +62,18 @@ After that, [generate_song.rb](generate_song.rb) makes a big markov hash out of 
 
 Here's one that it generated:
 
-'''
+`
 {"name":"YNKVK","tempo":130,"a_section":[["C","G7+"],["C","C","C","G7"],["C7"],["C#7","D7"],["Dm7"],["G7"],["C"],["C"]],"b_section":[["Em7b5"],["A7"],["F6"],["Fm6"],["C"],["C"],["Am7"],["Dm7"],["G7"],["C"],["Dm7","G7"],["C"],["F"],["Bm7","E7"],["A"],["A"]],"structure":[["A1","B1"],["B2","B1","B"],["B1","B"],["B1","B"]]}
-'''
+`
 
-Got some ii V I, some secondary dominant changes, and it's not just one chord to a bar. Noice. Not sure why we don't like the "A" section but whatever.
+Got some ii V I, some secondary dominant changes, and it's not just one chord to a bar. Nice. Not sure why we don't like the "A" section but whatever.
 
 I made a (really crappy) melody, chord, and bass generator. Here's how this song looks and sounds realized:
+(image.png)
 
+`
+
+`
 
 # Other cool links
 [This guy did something similar, but with neural nets and using band in a box, which is cheating, kind of? Also his progressions are a lot richer](https://keunwoochoi.wordpress.com/2016/02/19/lstm-realbook/)
