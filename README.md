@@ -68,8 +68,7 @@ Here's one that it generated:
 
 Got some ii V I, some secondary dominant changes, and it's not just one chord to a bar. Nice.
 
-I made a (really crappy) lead, piano, drum, and bass generator. [Here's how this song, and many others, sound like when realized]
-(imgur.com)
+I made a (really crappy) lead, piano, drum, and bass generator. [Here's how this song, and many others, sound like when realized](http://www.imgur.com)
 
 
 # Other cool links
